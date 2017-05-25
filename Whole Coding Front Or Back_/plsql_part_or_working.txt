@@ -1,0 +1,257 @@
+-- It is the part which totally define the functionally of the Bookstore.
+
+
+--It is the trigger for the decreasing of the new book sold from the database.
+create or replace trigger book_decrease 
+before insert on nbk_stu 
+for each row 
+declare
+qty_checker new_book.quantity%type; -- to get quantity of the book in new_book table.
+begin
+select quantity into qty_checker from new_book where isbn=:new.isbn;
+if qty_checker=0 then  -- to check quantity is eqaual to zero.
+raise_application_error(-20002,'no book is left ');
+else  -- if quantity is not equal to zero than update.
+update new_book set quantity=quantity-1 where isbn= :new.isbn;
+end if;
+dbms_output.put_line('book quantity successfully updated in database');
+end;
+
+
+--Trigger for the filling of the bill table for the final making of the bill.
+create or replace trigger trg_bill_tb
+after insert on nbk_stu
+for each row
+declare
+titleb new_book.title%type;  -- title for the insertion into bill table.
+priceb new_book.price%type; -- price for the insertion into bill table.
+discountb new_book.discount_cust%type; -- dicount for the insertion into bill table.
+net_priceb bill.net_price%type; -- to calculate the net price for the corresponding quantity.
+begin
+select title,price,discount_cust into titleb,priceb,discountb from new_book where isbn=:new.isbn;
+net_priceb:= ((priceb*(100-discountb))/100);
+   insert into bill values(:new.rollno,:new.isbn,titleb,priceb,discountb,sysdate,net_priceb); -- inserting values into bill table.
+end;
+
+
+
+
+--It is the procedure for the Generation of the bill with one argument which is roll number.
+create or replace procedure Gen_bill(rno in number) 
+as
+rec bill%rowtype;
+a number;
+cursor billdata is (select *from bill where roll=rno and dop between to_char(sysdate-1/24,'dd-mon-yyyy hh:mi:ss pm') and to_char(sysdate,'dd-mon-yyyy hh:mi:ss pm'));
+cursor name_of_student is (select name from student where rollno=rno);
+sname varchar2(50);
+total_amount number;
+begin 
+a:=1; --It is used for the stoping condition.
+total_amount:=0;
+dbms_output.put_line('                        Date-'   || sysdate);
+dbms_output.put_line('   ');
+open name_of_student ;
+fetch name_of_student into sname;
+sys.dbms_output.put_line('Name-' || sname);
+close name_of_student;
+open billdata;
+
+loop
+fetch billdata into rec;
+if(a=1) then
+dbms_output.put_line('Rollno-' || rec.roll);
+a:=0;
+SYS.dbms_output.put_line('    ');
+end if;
+exit when billdata%notfound;
+dbms_output.put_line(rec.isbn_or_barcode || '    ' || rec.name_of_item ||'   '|| rec.price|| '   '|| rec.discount ||'    '|| rec.net_price );
+total_amount:=total_amount + rec.net_price;
+end loop;
+close billdata;
+SYS.dbms_output.put_line('   ');
+SYS.dbms_output.put_line('        Total Amount-'|| total_amount || ' Rs');
+end;
+
+
+
+--It is procedure which is used for the creation of list of which should be order to the --supplier.
+
+create or replace procedure gen_requirement
+as
+cursor records is select *from new_book where (limit_quantity-quantity) >=10; -- to generate the number of books required for different books.
+begin 
+dbms_output.put_line('isbn                title                         qty');
+for item in records loop
+dbms_output.put_line(item.isbn||'   '||item.title||'   '|| (item.limit_quantity- item.quantity)); -- genrate the requirement table.
+end loop;
+end;
+
+
+
+--Trigger for the entering of the data of supply of new book comes to shop after      --supplied.
+create or replace trigger book_increase 
+after insert on bs_nb
+for each row 
+begin
+update new_book set quantity=quantity+:new.quantity where isbn= :new.isbn ;
+update new_book set discount_supl=:new.discount_supl where isbn=:new.isbn;
+update new_book set discount_cust=:new.discount_cust where isbn=:new.isbn;
+update new_book set price=:new.price where isbn=:new.isbn;
+dbms_output.put_line('book quantity successfully updated in database');
+end;
+
+--It is procedure which is used for the insertion of data for the new book sold.
+create or replace PROCEDURE add_nbk(myisbn in nbk_stu.isb%type, myroll in nbk_stu.rollno%type) as
+  BEGIN
+  insert into nbk_stu values(myroll,myisbn,sysdate);
+  dbms_output.put_line('Row Added Successfully');
+  END;
+
+
+
+--procedure for the checking of last somedays records;
+create or replace procedure check_record(days in number)
+as 
+rec bill%rowtype;
+cursor records is (select *from bill where dop between to_char(sysdate-days,'dd-mon-yyyy hh:mi:ss pm') and to_char(sysdate,'dd-mon-yyyy hh:mi:ss pm'));
+total_sale number;
+begin 
+total_sale:=0;
+open records ;
+loop
+fetch records into rec;
+exit when records%notfound;
+total_sale:=total_sale+rec.net_price;
+dbms_output.put_line(   rec.roll ||  '     '||rec.isbn_or_barcode || '    ' || rec.name_of_item ||'   '|| rec.price|| '   '|| rec.discount ||'    '|| rec.net_price );
+end loop;
+close records;
+dbms_output.put_line('   ');
+dbms_output.put_line('Total sale- '||total_sale|| ' Rs');
+end;
+
+
+
+--If the bookseller what to update the discount provieded to the customer.Hence this is --the procedure for it. 
+create or replace procedure update_discount(myisbn in new_book.isbn%type,mydiscount in new_book.discount_cust%type)
+as
+begin
+update new_book set discount_cust =mydiscount where isbn= myisbn;
+end;
+
+--Trigger for the increase of stationary data on supply
+create or replace trigger stationary_increase 
+after insert on ss_s
+for each row 
+begin
+update stationary set quantity=quantity+:new.quantity where barcode=:new.barcode;
+update stationary set discount_supl=:new.discount_supl where barcode=:new.barcode;
+update stationary set discount_cust=:new.discount_cust where barcode=:new.barcode;
+update stationary set price=:new.price where barcode=:new.barcode;
+dbms_output.put_line('stationary quantity successfully updated in database');
+end;
+
+
+--Trigger for the decreasing of quantity of stationary which is sold.
+create or replace trigger stationary_decrease 
+before insert on sty_stu 
+for each row 
+declare
+qty_checker stationary.quantity%type; -- to get quantity of the book in new_book table.
+begin
+select quantity into qty_checker from stationary where barcode=:new.barcode;
+if qty_checker=0 then  -- to check quantity is eqaual to zero.
+raise_application_error(-20002,'no stationary is left ');
+else  -- if quantity is not equal to zero than update.
+update stationary set quantity=quantity-1 where barcode= :new.barcode;
+end if;
+dbms_output.put_line('stationary quantity successfully updated in database');
+end;
+
+
+--Trigger for the filling of bill table by  stationary.
+create or replace trigger trg_bill_tb_stationary
+after insert on sty_stu
+for each row
+declare
+titleb stationary.Name_of_item%type;  -- title for the insertion into bill table.
+priceb stationary.price%type; -- price for the insertion into bill table.
+discountb stationary.discount_cust%type; -- dicount for the insertion into bill table.
+net_priceb bill.net_price%type; -- to calculate the net price for the corresponding quantity.
+begin
+select name_of_item,price,discount_cust into titleb,priceb,discountb from stationary where barcode=:new.barcode;
+net_priceb:= ((priceb*(100-discountb))/100);
+   insert into bill values(:new.rollno,:new.barcode,titleb,priceb,discountb,sysdate,net_priceb); -- inserting values into bill table.
+end;
+
+
+--Trigger for the filling of bill table by old book bought by student.
+create or replace trigger trg_bill_tb_obk_stu_b
+after insert on obk_stu_b
+for each row
+declare
+titleb old_book.title%type;  -- title for the insertion into bill table.
+begin
+select title into titleb from old_book where isbn=:new.isbn;
+   insert into bill values(:new.rollno,:new.isbn,titleb,:new.price,0,sysdate,:new.price); -- inserting values into bill table.
+end;
+
+
+--Trigger for the increase of old book when sold by the student and purchased by --bookseller.
+create or replace trigger old_book_increase 
+after insert on obk_stu_s
+for each row 
+begin
+update old_book set quantity=quantity+1 where isbn= :new.isbn ;
+dbms_output.put_line('book quantity successfully updated in database');
+end;
+
+
+--Trigger for the decreasing of old book which is purchased by the student or sold by --the bookseller.
+create or replace trigger old_book_decrease 
+before insert on obk_stu_b
+for each row 
+declare
+qty_checker old_book.quantity%type; -- to get quantity of the book in new_book table.
+begin
+select quantity into qty_checker from old_book where isbn=:new.isbn;
+if qty_checker=0 then  -- to check quantity is eqaual to zero.
+raise_application_error(-20002,'no book is left ');
+else  -- if quantity is not equal to zero than update.
+update old_book set quantity=quantity-1 where isbn= :new.isbn;
+end if;
+dbms_output.put_line('book quantity successfully updated in database');
+end;
+
+
+--It is procedure which is used for entering data after sold of stationary.
+create or replace PROCEDURE add_stationary(mybarcode in sty_stu.barcode%type, myroll in sty_stu.rollno%type) as
+  BEGIN
+  insert into sty_stu values(myroll,mybarcode,sysdate);
+  dbms_output.put_line('Row Added Successfully');
+  END;
+
+
+--Procedure for entering data of new book supply which is sent by supplier.
+create or replace procedure supply_book(mypan_number bs_nb.pan_number%type,myisbn bs_nb.isbn%type,myquantity bs_nb.quantity%type,mydiscount_supl bs_nb.discount_supl%type,myprice bs_nb.price%type,mydiscount_cust bs_nb.discount_cust%type)
+  as
+  begin
+  insert into bs_nb values(mypan_number,myisbn,myquantity,mydiscount_supl,sysdate,myprice,mydiscount_cust);
+  end;
+
+
+--Procedure for entering data of stationery supply which is sent by supplier.
+create or replace procedure supply_stationary(mypan_number ss_s.pan_number%type,mybarcode ss_s.barcode%type,myquantity ss_s.quantity%type,mydiscount_supl ss_s.discount_supl%type,myprice ss_s.price%type,mydiscount_cust ss_s.discount_cust%type)
+  as
+  begin
+  insert into ss_s values(mypan_number,mybarcode,myquantity,mydiscount_supl,sysdate,mydiscount_cust,myprice);
+  end;
+  
+
+--Procedure for entering data purchased by the book seller.  
+create or replace 
+procedure add_book_purchased_by_seller(myroll in obk_stu_s.rollno%type,myisbn in obk_stu_s.isbn%type,myprice obk_stu_s.price%type)
+as
+begin
+insert into obk_stu_s values(myroll,myisbn,myprice,sysdate);
+dbms_output.put_line('old book has been has been added successfully to the database');
+end;

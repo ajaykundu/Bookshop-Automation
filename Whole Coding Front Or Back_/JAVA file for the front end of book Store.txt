@@ -1,0 +1,433 @@
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
+
+public class bookstore extends JFrame implements ActionListener{
+
+	// this is for the buying of books or stationary.
+	JTextField t1,t2,t3;
+	    JButton b1,b2,b3,b4;
+	    JLabel l1,l2,l3;
+	bookstore(){
+		setLayout(null);
+		 setSize(1200,700);
+		 setVisible(true);
+		 
+		 t1=new JTextField();
+		 t2=new JTextField();
+		 t3=new JTextField();
+		
+		 t1.setBounds(300,100,150,50);
+		 t2.setBounds(300,200,150,50);
+		 t3.setBounds(900,200,150,50);
+		 
+		 
+		b1=new JButton("New_book");
+		b1.setBounds(200,400,100,50);
+		
+		b2=new JButton("Stationary");
+		b2.setBounds(300,400,100,50);
+		
+		b3=new JButton("old_book");
+		b3.setBounds(900,400,100,50);
+		
+		b4=new JButton("Supplier");
+		b4.setBounds(0,0,100,100);
+		
+		l1=new JLabel("Roll Number :");
+		l2=new JLabel("ISBN/BARCODE :");
+		l3=new JLabel("price_only_in_case_of_old_book:");
+		l1.setBounds(150,100,100,50);
+		l2.setBounds(150,200,100,50);
+		l3.setBounds(650,200,300,50);
+		
+		add(t3); add(t1);add(t2);add(b1);add(b2);add(b3);add(l1);add(l2);add(l3);add(b4);
+		
+		 
+		 b2.addActionListener(this);
+		 b1.addActionListener(this);
+		 b3.addActionListener(this);
+		b4.addActionListener(this); 
+	}
+	
+	
+	
+	// Entering data in the bookstore when a shipment comes.
+	
+	// Making of the textfield for the entering of the data.
+	JTextField pan_number_textfield;
+	JTextField isbn_textfield;
+	JTextField quantity_textfield;
+	JTextField discount_supl_textfield;
+	JTextField price_textfield;
+	JTextField discount_cust_textfield;
+	// fields for the entering of the data for the old book purchased by the bookseller.
+	JTextField rollno_old_book_textfield;
+	JTextField isbn_old_book_textfield;
+	JTextField price_old_book_textfield;
+	
+	
+	
+	// Labeling of the front end.
+	JLabel pan_number_label;
+	JLabel isbn_label;
+	JLabel quantity_label;
+	JLabel discount_supl_label;
+	JLabel price_label;
+	JLabel discount_cust_label;
+	// label for the entering of the data for the book purchased by the bookseller.
+	JLabel rollno_old_book_label;
+	JLabel isbn_old_book_label;
+	JLabel price_old_book_label;
+	
+	
+	
+	// Creating of the button for the entering of the data.
+	JButton book_supplier;
+	JButton stationary_supply;
+	JButton Book_OR_Stationary_selling;
+	JButton old_book_purchased;
+	
+	
+	// Entering of the data for the supplier and this is new window.
+	bookstore(int i)
+	{
+		
+		setLayout(null);
+		 setSize(1200,700);
+		 setVisible(true);
+		 
+		     pan_number_textfield=new JTextField();
+		     pan_number_label=new JLabel("Pan Number :");
+			 isbn_textfield=new JTextField();
+			 isbn_label=new JLabel("ISBN OR BARCODE :");
+			 quantity_textfield=new JTextField();
+			 quantity_label=new JLabel("Quantity :");
+		     discount_supl_textfield=new JTextField();
+		     discount_supl_label=new JLabel("Discount Supplier :");
+			 price_textfield=new JTextField();
+			 price_label=new JLabel("Price :");
+		     discount_cust_textfield=new JTextField();
+		     discount_cust_label=new JLabel("Discount Customer :");
+		     book_supplier=new JButton("Book Supply");
+		     stationary_supply=new JButton("Stationery Supply");
+		     Book_OR_Stationary_selling=new JButton("<=");
+		     
+		     rollno_old_book_label=new JLabel("Rollno :");
+		     isbn_old_book_label=new JLabel("ISBN :");
+		     price_old_book_label=new JLabel("Price :");
+		     rollno_old_book_textfield=new JTextField();
+		     isbn_old_book_textfield=new JTextField();
+		     price_old_book_textfield=new JTextField();
+		     old_book_purchased=new JButton("Old Book");
+		     
+		     
+		     pan_number_textfield.setBounds(200,100,150,50);
+		     pan_number_label.setBounds(50,100,150,50);
+		     isbn_textfield.setBounds(200,150,150,50);
+		     isbn_label.setBounds(50,150,150,50);
+		     quantity_textfield.setBounds(200,200,150,50);
+		     quantity_label.setBounds(50,200,150,50);
+		     discount_supl_textfield.setBounds(200,250,150,50);
+		     discount_supl_label.setBounds(50,250,150,50);
+		     price_textfield.setBounds(200,300,150,50);
+		     price_label.setBounds(50,300,150,50);
+		     discount_cust_textfield.setBounds(200,350,150,50);
+		     discount_cust_label.setBounds(50,350,150,50);
+		     book_supplier.setBounds(100,450,150,50);
+		     stationary_supply.setBounds(250,450,150,50);
+		     Book_OR_Stationary_selling.setBounds(0,0,50,50);
+		     
+		     rollno_old_book_label.setBounds(650,150,150,50);
+		     rollno_old_book_textfield.setBounds(800,150,150,50);
+		     isbn_old_book_label.setBounds(650,225,150,50);
+		     isbn_old_book_textfield.setBounds(800,225,150,50);
+		     price_old_book_label.setBounds(650,300,150,50);
+		     price_old_book_textfield.setBounds(800,300,150,50);
+		     old_book_purchased.setBounds(750,400,100,50);
+		     
+		     add(rollno_old_book_label);
+		     add(isbn_old_book_label);
+		     add(price_old_book_label);
+		     add(price_old_book_textfield);
+		     add(isbn_old_book_textfield);
+		     add(rollno_old_book_textfield);
+		     add(old_book_purchased);
+		     
+		     
+		     
+		     
+		     add(pan_number_textfield);
+		     add(pan_number_label);
+		     add(isbn_textfield);
+		     add(isbn_label);
+		     add(quantity_textfield);
+		     add(quantity_label);
+		     add(discount_cust_textfield);
+		     add(discount_cust_label);
+		     add(discount_supl_textfield);
+		     add(discount_supl_label);
+		     add(price_textfield);
+		     add(price_label);
+		     add(book_supplier);     
+		     add(stationary_supply);
+		     add(Book_OR_Stationary_selling);
+		     
+		     book_supplier.addActionListener(this);
+		     stationary_supply.addActionListener(this);
+		     Book_OR_Stationary_selling.addActionListener(this);
+		    old_book_purchased.addActionListener(this);
+	}
+
+	
+	
+	//starting of the main method and creating the Frame.
+	public static void main(String[] args) {
+		// opening of the first frame.		
+    bookstore bs=new bookstore();		
+}
+	
+	
+	//Action are performed when the button is clicked.
+	@Override
+	public void actionPerformed(ActionEvent ae) {
+		// Entering of data into tables.
+		
+		
+		
+		// Entering of data for the new book sold.
+		if(ae.getSource()==b1){
+			try {
+				int i=Integer.parseInt(t1.getText());
+				sold_of_new_book(i,t2.getText());
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
+		// Entering of data for the stationary sold.
+		if(ae.getSource()==b2)
+		{
+		   try {
+			   int i=Integer.parseInt(t1.getText());
+			sold_of_stationary(i,t2.getText());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		}	
+		
+		
+		
+		
+		// Entering of data for the old book sold.
+		if(ae.getSource()==b3)
+		{
+		   try {
+			   int i=Integer.parseInt(t1.getText());
+			 double j=Double.parseDouble(t3.getText());
+			sold_of_old_book(i,t2.getText(),j);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		}	
+		
+		
+		
+		
+		
+		// calling of frame for the supplier and entering of data shipment provided by the supplier.
+		if(ae.getSource()==b4)
+		{
+			setVisible(false);
+			System.out.println("Welcome to Supplier entering");
+     	bookstore pu=new bookstore(1);
+			
+		}
+		
+		
+		//Entering of data for the book supply its quantity and discount.
+		if(ae.getSource()==book_supplier)
+		{
+          try {
+        	  String pan=pan_number_textfield.getText();
+        	  String isbn_barcode=isbn_textfield.getText();
+        	  int qty=Integer.parseInt(quantity_textfield.getText());
+        	  int disc=Integer.parseInt(discount_cust_textfield.getText());
+        	  int diss=Integer.parseInt(discount_supl_textfield.getText());
+        	  int price=Integer.parseInt(price_textfield.getText());
+        	  
+        	  
+			Supply_of_book(pan,isbn_barcode,qty,disc,diss,price);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
+		
+		
+		//Supply of the stationary from the supplier.
+		if(ae.getSource()==stationary_supply)
+		{
+          try {
+        	  String pan=pan_number_textfield.getText();
+        	  String isbn_barcode=isbn_textfield.getText();
+        	  int qty=Integer.parseInt(quantity_textfield.getText());
+        	  int disc=Integer.parseInt(discount_cust_textfield.getText());
+        	  int diss=Integer.parseInt(discount_supl_textfield.getText());
+        	  int price=Integer.parseInt(price_textfield.getText());
+        	  
+        	  
+			Supply_of_stationary(pan,isbn_barcode,qty,disc,diss,price);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
+		
+		//Switching between the selling and supply of the product.
+		if(ae.getSource()== Book_OR_Stationary_selling)
+		{
+			setVisible(false);
+			bookstore bs=new bookstore();
+			
+		}
+		
+		
+		//Entering of the data for the puchasing of the book by the bookseller.
+		
+		if(ae.getSource()==old_book_purchased)
+		{
+			try {
+				purchase_of_old_book(Integer.parseInt(rollno_old_book_textfield.getText()),isbn_old_book_textfield.getText(),Double.parseDouble(price_old_book_textfield.getText()));
+			} catch (NumberFormatException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+
+	// this method is used for the sold of new_book and entering of the data into nbk_stu table
+	public static void sold_of_new_book(int i,String arr) throws SQLException{
+		 try {
+			 System.out.println("A new_book has been sold from the database");
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection conn=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1523:orcl","system","ajay37ak");
+				CallableStatement cst=conn.prepareCall("CALL add_nbk("+arr+","+i+")");
+				cst.execute();
+				cst.close();
+				conn.close();
+				System.out.println("connection has been closed");
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+	}
+	
+	
+// this method is used for the sold of the stationary and entering of the data into sty_stu table.
+	public static void sold_of_stationary(int i,String arr) throws SQLException{		
+		 try {
+			 System.out.println("A stationary item has been sold");
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection conn=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1523:orcl","system","ajay37ak");
+				CallableStatement cst=conn.prepareCall("CALL add_stationary("+arr+","+i+")");
+				cst.execute();
+				cst.close();
+				conn.close();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+	}
+	
+	
+	//For entering into old_book. Which is sold recently.
+	public static void sold_of_old_book(int roll,String isbn,double price) throws SQLException{		
+		 try {
+			 System.out.println("A old book has been sold");
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection conn=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1523:orcl","system","ajay37ak");
+				CallableStatement cst=conn.prepareCall("CALL add_old_book("+isbn+","+roll+","+price+")");
+				cst.execute();
+				cst.close();
+				conn.close();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+	}
+	
+	// purchase of the old book from the student and entering of the data in the table.
+	public static void purchase_of_old_book(int roll,String isbn,double price) throws SQLException{		
+		 try {
+			 System.out.println("A old book has been sold");
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection conn=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1523:orcl","system","ajay37ak");
+				CallableStatement cst=conn.prepareCall("CALL add_book_purchased_by_seller("+roll+",'"+isbn+"',"+price+")");
+				cst.execute();
+				cst.close();
+				conn.close();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+	}
+	
+	
+	//Entering of the data for the supply of stationary which came from the supplier.
+		public static void Supply_of_stationary(String pan,String barcode,int qty,double ditc,double dits,double price) throws Exception{
+			try {
+				
+				 System.out.println("A new Supply Have been activated for the stationery");		
+					Class.forName("oracle.jdbc.driver.OracleDriver");
+					Connection conn=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1523:orcl","system","ajay37ak");
+					CallableStatement cst=conn.prepareCall("CALL supply_stationary('"+pan+"','"+barcode+"',"+qty+","+dits+","+price+","+ditc+")");
+					cst.execute();
+					cst.close();
+					conn.close();
+					System.out.println("Connection has been sucessfully closed");
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
+		}
+	
+	
+    // Entering of the data for the supply of new book which came from the supplier.	
+	public static void Supply_of_book(String pan,String isbn,int qty,int ditc,int dits,int price) throws Exception{
+		try {
+			 System.out.println("A new Supply Have been activated for the new book");
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection conn=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1523:orcl","system","ajay37ak");
+			CallableStatement cst=conn.prepareCall("CALL supply_book('"+pan+"','"+isbn+"',"+qty+","+dits+","+price+","+ditc+")");
+				
+				
+			cst.execute();
+				cst.close();
+				conn.close();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+	}
+	
+	
+}

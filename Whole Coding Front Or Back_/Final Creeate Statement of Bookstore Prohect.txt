@@ -1,0 +1,152 @@
+
+--Entering of the data for the stationary part its all details.
+create table stationary(
+   barcode varchar(15) constraint pk_stationary primary key,
+   Name_of_item varchar2(30) not null,
+   price number(5,2) not null,
+   discount_supl number not null,
+   discount_cust number not null,
+   company varchar2(30) not null ,
+   quantity number(5) not null,
+   check(quantity>=0),
+   check(price>0)
+);
+
+
+--Table for the entering of the data for the stationary Supplier.
+create table stationary_supplier(
+pan_number varchar2(15) constraint pk_stationary_supplier primary key,
+name varchar2(20) not null,
+address varchar2(60) not null
+);
+
+--Entering of the multiple number of the supplier.
+create table stationary_Supplier_mobile(
+pan_number varchar2(15) references stationary_supplier,
+Mobile_Number number(12),
+primary key (pan_number,Mobile_Number)
+);
+
+--Table for the entering of the data for the book supplier.
+create table book_supplier(
+ Pan_number varchar2(15) constraint pk_book_supplier primary key,
+ name varchar2(30) not null,
+ address varchar2(60) not null
+);
+
+--Table for  the entering of mobile number of the book supplier.
+create table book_supplier_mobile(
+pan_number varchar2(15) references book_supplier,
+mobile_number number(12),
+primary key(pan_number,mobile_number)
+);
+
+-- Table for the entering details for the new_book.
+create table new_book(
+  isbn varchar2(20) constraint pk_new_book primary key,
+  title varchar2(60) not null,
+  edition number(2) not null,
+  quantity number(5) not null,
+  price number(5,2) not null,
+  discount_supl number(2) not null,
+  discount_cust number(2) not null,
+  check(price>0),check(discount_supl >0 and discount_supl<100),check(quantity>=0),check(edition>0)
+);
+
+
+--Table for the entering details for the old_book.
+create table old_book(
+   isbn varchar2(20) constraint pk_old_book primary key,
+    title varchar2(60) not null,
+     edition number(2) not null,
+      quantity number(5) not null,
+      check(quantity>0),check(edition>0)
+);
+
+--Table for the entering the datails for students their roll number and name.
+create table student(
+rollno number(9) constraint pk_student primary key,
+name varchar2(20) not null
+);
+
+
+--Table for the entering data the new_book sold.
+create table nbk_stu(
+rollno number(9) constraint fk_nbk_stu_rollno references student,
+isbn varchar2(20) constraint fk_nbk_stu_isbn references new_book,
+dt date
+);
+
+
+--Table for the entering of the data of old book which is sold by the bookseller.
+create table obk_stu_b(
+rollno number(9) constraint fk_old_stu_b_rollno references student,
+isbn varchar2(20) constraint fk_obk_stu_b_isbn references old_book,
+price number(5,2) not null,
+check(price>0),
+dt date
+);
+
+
+--Table for the entering of the data of old book purchased by the bookseller 
+create table obk_stu_s(
+rollno number(9) constraint fk_obk_stu_s_rollno references student,
+isbn varchar2(20) constraint fk_obk_stu_s_isbn references old_book,
+price number(5,2) not null,
+check (price>0),
+dt date 
+);
+
+--Table for the entering for the stationery sold. 
+create table sty_stu
+(
+rollno number(9) constraint fk_sty_stu_rollno references student,
+barcode varchar2(15) constraint fk_sty_stu_barcode references stationary,
+dt date
+);
+
+
+--Table for the entering of data of new book supplied by the supplier.
+create table bs_nb (
+pan_number varchar2(15) constraint fk_bs_nb_pan_number references book_supplier,
+isbn varchar2(20) constraint fk_bs_nb_isbn references new_book,
+quantity number(5) not null,
+check(quantity >0),
+discount number(2) not null,
+check (discount>=0 and discount<100),
+dt date
+);
+
+--Table for the entering of data of stationery supplied by the supplier.
+create table ss_s(
+pan_number varchar2(15) constraint fk_ss_s_pan_number references stationary_supplier,
+barcode number(10) constraint fk_ss_s_barcode references stationary,
+quantity number(5) not null,
+check(quantity >0),
+discount number(2) not null,
+check (discount>=0 and discount<100),
+dt date
+);
+
+--Table for the entering the data of multiple author of old book.
+create table oldb_author(
+isbn varchar2(20) constraint fk_oldb_author_isbn references old_book,
+author varchar2(30) constraint fk_oldb_author_author references authors
+);
+
+
+--Table for the entering the data of multible author of new book.
+create table newb_author(
+isbn varchar2(20) constraint fk_newb_author_isbn references new_book,
+author varchar2(30) constraint fk_newb_author_author references authors
+);
+
+-- This is a backend table which is used for the creation of the bill.
+create table bill (roll number(9) ,
+isbn_or_barcode varchar(17),
+name_of_item varchar2(60),
+price number ,
+dicount number,
+dop timestamp ,
+net_price number
+);
